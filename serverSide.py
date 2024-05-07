@@ -1,5 +1,5 @@
 import socket
-from threading import thread
+from threading import Thread
 
 #Server's IP address
 SERVER_HOST = "0.0.0.0"
@@ -51,7 +51,7 @@ while True:
     client_socket, client_address = s.accept()
 
     #start new thread that listens for each client's messages
-    t = thread(target = listen_for_clients, args = (client_socket, ))
+    t = Thread(target = listen_for_clients, args = (client_socket, ))
 
     #make the thread end when the main thread ends 
     t = daemon = True
