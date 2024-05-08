@@ -2,7 +2,7 @@ from googletrans import Translator
 
 #print (googletrans.LANGUAGES)  
 
-text = "Jag ater kott"
+text = "Jag ater god"
 translatedText = "EN"
 
 translator = Translator()

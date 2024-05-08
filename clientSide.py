@@ -1,72 +1,46 @@
 import socket
-import random
-from threading import Thread
-from datetime import datetime
-from colorama import Fore, init, Back
+import threading
+import googletrans
+from googletrans import Translator
 
-# init colors
-init()
+translator = Translator()
 
-# set the available colors
-colors = [Fore.BLUE, Fore.CYAN, Fore.GREEN, Fore.LIGHTBLACK_EX, 
-    Fore.LIGHTBLUE_EX, Fore.LIGHTCYAN_EX, Fore.LIGHTGREEN_EX, 
-    Fore.LIGHTMAGENTA_EX, Fore.LIGHTRED_EX, Fore.LIGHTWHITE_EX, 
-    Fore.LIGHTYELLOW_EX, Fore.MAGENTA, Fore.RED, Fore.WHITE, Fore.YELLOW
-]
+nickname = input("Choose a nickname: ")
 
-# choose a random color for the client
-client_color = random.choice(colors)
+print("Here are the list of languages:")
+print(googletrans.LANGUAGES)
 
+lang = input("Please enter your language of choice: ")
 
-#server's IP address
-# if the server is not on this machine, 
-# put the private (network) IP address
-SERVER_HOST = "192.168.141.90"
-SERVER_PORT = 5002 #server's port
-separator_token = "<SEP>"
+client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+client.connect(('127.0.0.1', 55555))
 
-# initialize TCP socket
-s = socket.socket()
-print(f"[*] Connecting to {SERVER_HOST}:{SERVER_PORT}...")
-
-# connect to the server
-s.connect((SERVER_HOST, SERVER_PORT))
-print("[+] Connected.")
-
-#prompt the client for a name
-name = input("Enter your name: ")
-
-def listen_for_messages():
+def receive():
     while True:
-        message = s.recv(1024).decode()
-        print("\n" + message)
+        try:
+            message =  client.recv(1024).decode()
+            if message == 'NICK':
+                client.send(nickname.encode('ascii'))
+            else:
+                detectedLang = translator.detect(message).lang.lower()
+                translation = translator.translate(message[message.index("]")+1:], src=detectedLang, dest=lang)
+                print(message)
+        except:
+            print("An error occurred!")
+            client.closed()
+            break
 
-#make a thread that listens for messages to this client and print them
-t = Thread(target=listen_for_messages)
+def write():
+    while True:
+        message = f'{nickname}: {input("")}'
+        if message == "!q":
+            client.close()
+            break
+        else:
+            client.send(f"[{lang}]{message}".encode('ascii'))
 
-#make the thread daemon so it ends whenever the main thread ends
-t.daemon = True
+receive_thread = threading.Thread(target=receive)
+receive_thread.start()
 
-#start the thread
-t.start()
-
-while True:
-    #input message we want to send to the server
-    to_send = input()
-
-    #a way to exit the program 
-    if to_send.lower() == 'q':
-        break
-
-    #add the datetime, name and colour of the sender
-    date_now = datetime.now().strftime("%d-%m-%Y, %H:%M:%S")
-    to_send = f"{client_color}[{date_now}] {name}{separator_token}{to_send}{fore.RESET}"
-
-    #send the message
-    s.send(to_send.encode())
-
-#closer the socket
-s.close()
-
-
-
+write_thread = threading.Thread(target=write)
+write_thread.start()
