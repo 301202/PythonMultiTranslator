@@ -19,12 +19,12 @@ def receive():
     while True:
         try:
             message =  client.recv(1024).decode()
+            detectedLang = translator.detect(message).lang.lower()
             if message == 'NICK':
                 client.send(nickname.encode('ascii'))
             else:
-                detectedLang = translator.detect(message).lang.lower()
-                translation = translator.translate(message[message.index("]")+1:], src=detectedLang, dest=lang)
-                print(message)
+                translation = translator.translate(message, src=detectedLang, dest=lang)
+                print(translation.text)
         except:
             print("An error occurred!")
             client.closed()
@@ -37,7 +37,7 @@ def write():
             client.close()
             break
         else:
-            client.send(f"[{lang}]{message}".encode('ascii'))
+            client.send(f"{message}".encode('ascii'))
 
 receive_thread = threading.Thread(target=receive)
 receive_thread.start()
