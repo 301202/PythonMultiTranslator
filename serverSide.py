@@ -1,7 +1,7 @@
 import socket
 import threading
 
-host = '127.0.0.1' #localhost
+host = "localhost" #localhost
 port = 55555
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
