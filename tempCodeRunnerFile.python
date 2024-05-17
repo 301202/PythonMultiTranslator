@@ -1,5 +1,0 @@
-from libretranslate.py import LibreTranslate 
-
-lt = LibreTranslate()
-
-result = lt.translate("Hello", source = "en", target = "fr")
