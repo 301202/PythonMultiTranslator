@@ -3,7 +3,7 @@ from googletrans import Translator
 #print (googletrans.LANGUAGES)  
 
 text = "Jag ater god"
-translatedText = "EN"
+translatedText = "german"
 
 translator = Translator()
 

@@ -26,6 +26,7 @@ def home():
     if request.method == "POST":
         name = request.form.get("name")
         code = request.form.get("code")
+        language = request.form.get('language')
         join = request.form.get("join", False)
         create = request.form.get("create", False)
         

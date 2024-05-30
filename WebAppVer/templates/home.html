@@ -1,10 +1,21 @@
 {% extends 'base.html' %}
 {% block content %}
 <form method="post" class="buttons">
+    <h2>Multi-Language Translator</h2>
     <h3>Enter The Chat Room</h3>
     <div>
         <label>Name:</label>
         <input type="text" placeholder="Pick a name!" name="name" value="{{name}}"/>
+    </div>
+    <div class="languages">
+        <label>Language:</label>
+        <select name="language">
+            <option value="en">English</option>
+            <option value="es">Spanish</option>
+            <option value="fr">French</option>
+            <option value="de">German</option>
+            <!-- Add more languages later -->
+        </select>
     </div>
     <div class="join">
         <input type="text" placeholder="Room Code" name="code" value="{{code}}"/>
