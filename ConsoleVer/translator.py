@@ -2,8 +2,8 @@ from googletrans import Translator
 
 #print (googletrans.LANGUAGES)  
 
-text = "Jag ater god"
-translatedText = "german"
+text = "Dzień dobry"
+translatedText = "en"
 
 translator = Translator()
 
@@ -13,4 +13,5 @@ destinationLang = translatedText.lower()
 
 translation = translator.translate(text, src = detectedLang, dest = destinationLang)
 
+print(detectedLang)
 print(translation.text)

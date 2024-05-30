@@ -1,23 +1,23 @@
 from flask import Flask, render_template, request, session, redirect, url_for
-from flask_socketio import join_room, leave_room, send, SocketIO
-import random 
+from flask_ngrok import run_with_ngrok
+from flask_socketio import join_room, leave_room, send, SocketIO, emit
+import random
 from string import ascii_uppercase
+from googletrans import Translator
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "randomasskey"
 socketio = SocketIO(app)
+translator = Translator()
+run_with_ngrok(app)
 
 rooms = {}
 
 def generate_unique_code(length):
     while True:
-        code = ""
-        for _ in range(length):
-            code += random.choice(ascii_uppercase)
-
+        code = "".join(random.choice(ascii_uppercase) for _ in range(length))
         if code not in rooms:
             break
-    
     return code
 
 @app.route("/", methods=["POST", "GET"])
@@ -26,7 +26,7 @@ def home():
     if request.method == "POST":
         name = request.form.get("name")
         code = request.form.get("code")
-        language = request.form.get('language')
+        language = request.form.get("language")
         join = request.form.get("join", False)
         create = request.form.get("create", False)
         
@@ -39,16 +39,16 @@ def home():
         room = code
         if create != False:
             room = generate_unique_code(4)
-            rooms[room] = {"members": 0, "messages": []}
+            rooms[room] = {"members": [], "messages": []}
         elif code not in rooms:
             return render_template("home.html", error="Room does not exist.", code=code, name=name)
 
         session["room"] = room
         session["name"] = name
+        session["language"] = language
         return redirect(url_for("room"))
     
     return render_template("home.html")
-
 @app.route("/room")
 def room():
     room = session.get("room")
@@ -58,23 +58,32 @@ def room():
     return render_template("room.html", code=room, messages=rooms[room]["messages"])
 
 @socketio.on("message")
-def message(data):
+def handle_message(data):
     room = session.get("room")
     if room not in rooms:
         return
-    
-    content = {
-        "name": session.get("name"),
-        "message": data["data"]
-    }
-    send(content, to=room)
-    rooms[room]["messages"].append(content)
-    print(f"{session.get('name')} said: {data['data']}")
+
+    sender_name = session.get("name")
+    original_message = data["data"]
+
+    for member in rooms[room]["members"]:
+        user_language = member["language"]
+        translated_message = translator.translate(original_message, src='auto', dest=user_language).text
+        
+        content = {
+            "name": sender_name,
+            "message": translated_message
+        }
+
+        emit("message", content, room=member["sid"])
+        print(f"Sent to {member['name']} ({user_language}): {translated_message}")
 
 @socketio.on("connect")
 def connect(auth):
     room = session.get("room")
     name = session.get("name")
+    language = session.get("language")
+    sid = request.sid
     if not room or not name:
         return
     if room not in rooms:
@@ -82,23 +91,24 @@ def connect(auth):
         return
     
     join_room(room)
-    send({"name": name, "message": "has entered the room"}, to=room)
-    rooms[room]["members"] += 1
-    print(f"{name} joined room {room}")
+    rooms[room]["members"].append({"name": name, "language": language, "sid": sid})
+    emit("message", {"name": name, "message": "has entered the room"}, room=room)
+    print(f"{name} joined room {room} with language {language}")
 
 @socketio.on("disconnect")
 def disconnect():
     room = session.get("room")
     name = session.get("name")
+    sid = request.sid
     leave_room(room)
 
     if room in rooms:
-        rooms[room]["members"] -= 1
-        if rooms[room]["members"] <= 0:
+        rooms[room]["members"] = [member for member in rooms[room]["members"] if member["sid"] != sid]
+        if len(rooms[room]["members"]) <= 0:
             del rooms[room]
 
-    send({"name": name, "message": "has left the room"}, to=room)
+    emit("message", {"name": name, "message": "has left the room"}, room=room)
     print(f"{name} left the room {room}")
 
 if __name__ == "__main__":
-    socketio.run(app, debug=True)
+    socketio.run(app)
