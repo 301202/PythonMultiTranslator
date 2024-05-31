@@ -1,5 +1,4 @@
 from flask import Flask, render_template, request, session, redirect, url_for
-from flask_ngrok import run_with_ngrok
 from flask_socketio import join_room, leave_room, send, SocketIO, emit
 import random
 from string import ascii_uppercase
@@ -9,7 +8,7 @@ app = Flask(__name__)
 app.config["SECRET_KEY"] = "randomasskey"
 socketio = SocketIO(app)
 translator = Translator()
-run_with_ngrok(app)
+
 
 rooms = {}
 
@@ -111,4 +110,4 @@ def disconnect():
     print(f"{name} left the room {room}")
 
 if __name__ == "__main__":
-    socketio.run(app)
+    socketio.run(app, debug=True)
