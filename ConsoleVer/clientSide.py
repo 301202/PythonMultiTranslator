@@ -13,7 +13,7 @@ print(googletrans.LANGUAGES)
 lang = input("Please enter your language of choice: ")
 
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-client.connect(("0.tcp.eu.ngrok.io", 11554))
+client.connect(("localhost", 55555))
 
 
 def receive():
