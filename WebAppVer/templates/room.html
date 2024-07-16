@@ -16,14 +16,16 @@
     const messages = document.getElementById("messages");
 
     const createMessage = (name, msg) => {
+        const messageId = `message-${Date.now()}`;
         const content = `
-        <div class="text">
+        <div class="text" id="${messageId}">
             <span>
                 <strong>${name}</strong>: ${msg}
             </span>
         </div>
         `;
         messages.innerHTML += content;
+        document.getElementById(messageId).scrollIntoView();
     };
 
     socketio.on("message", (data) => {

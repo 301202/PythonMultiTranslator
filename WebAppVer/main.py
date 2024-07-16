@@ -91,22 +91,27 @@ def connect(auth):
     
     join_room(room)
     rooms[room]["members"].append({"name": name, "language": language, "sid": sid})
-    emit("message", {"name": name, "message": "has entered the room"}, room=room)
+
+    for member in rooms[room]["members"]:
+        user_language = member["language"]
+        connect_message = translator.translate("has entered the room", src='auto', dest=user_language).text
+        emit("message", {"name": name, "message": connect_message}, room=member["sid"])
+    
     print(f"{name} joined room {room} with language {language}")
 
 @socketio.on("disconnect")
 def disconnect():
     room = session.get("room")
     name = session.get("name")
+    language = session.get("language")
     sid = request.sid
     leave_room(room)
 
-    if room in rooms:
-        rooms[room]["members"] = [member for member in rooms[room]["members"] if member["sid"] != sid]
-        if len(rooms[room]["members"]) <= 0:
-            del rooms[room]
-
-    emit("message", {"name": name, "message": "has left the room"}, room=room)
+    for member in rooms.get(room, {}).get("members", []):
+        user_language = member["language"]
+        disconnect_message = translator.translate("has left the room", src='auto', dest=user_language).text
+        emit("message", {"name": name, "message": disconnect_message}, room=member["sid"])
+        
     print(f"{name} left the room {room}")
 
 if __name__ == "__main__":
