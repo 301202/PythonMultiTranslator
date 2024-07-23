@@ -1,1 +1,0 @@
-translator.detect("Good morning")
