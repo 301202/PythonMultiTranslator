@@ -1,10 +1,10 @@
-.content{
+.content {
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
-.buttons{
+.buttons {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -12,23 +12,23 @@
     gap: 10px;
 }
 
-.join{
+.join {
     display: flex;
     flex-direction: column;
     width: 100%;
 }
 
-.languages{
+.languages {
     display: flex;
     flex-direction: column;
     width: 100%;
 }
 
-.create-btn{
+.create-btn {
     width: 100%;
 }
 
-.message-box{
+.message-box {
     border-color: black;
     border-width: 2px;
     border-style: solid;
@@ -39,20 +39,21 @@
     flex-direction: column;
     width: 80vw;
     align-items: stretch;
+    position: relative;
 }
 
-.messages{
+.messages {
     overflow-y: scroll;
     flex: 1;
     width: 100%;
 }
 
-.inputs{
+.inputs {
     padding: 10px;
     display: flex;
 }
 
-h2{
+h2 {
     text-align: center;
 }
 
@@ -60,7 +61,7 @@ h2{
     flex: 1;
 }
 
-.text{
+.text {
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -69,7 +70,7 @@ h2{
     padding-right: 10px;
 }
 
-.muted{
+.muted {
     font-size: 10px;
     color: darkgray;
 }

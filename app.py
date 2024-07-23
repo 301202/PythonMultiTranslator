@@ -121,6 +121,27 @@ def disconnect():
         
     print(f"{name} left the room {room}")
 
+@socketio.on("leave")
+def leave():
+    room = session.get("room")
+    name = session.get("name")
+    language = session.get("language")
+    sid = request.sid
+    leave_room(room)
+
+    if room in rooms:
+        rooms[room]["members"] = [member for member in rooms[room]["members"] if member["sid"] != sid]
+        if len(rooms[room]["members"]) <= 0:
+            del rooms[room]
+
+    for member in rooms.get(room, {}).get("members", []):
+        user_language = member["language"]
+        leave_message = translator.translate("has left the room", src='auto', dest=user_language).text
+        emit("message", {"name": name, "message": leave_message}, room=member["sid"])
+    
+    print(f"{name} left the room {room}")
+
+
 if __name__ == "__main__":
     port = int(os.environ.get('PORT', 5000))
     socketio.run(app, host='0.0.0.0', port=port)
