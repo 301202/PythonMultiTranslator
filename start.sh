@@ -1,3 +1,3 @@
 #!/bin/bash
 source venv/bin/activate
-gunicorn -k eventlet -w 1 -b 0.0.0.0:5000 app:wsgi
+exec gunicorn -k eventlet -w 1 -b :$PORT app:app
