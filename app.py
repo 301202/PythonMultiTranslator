@@ -13,7 +13,7 @@ app = Flask(__name__)
 CORS(app)
 app.config["FLASK_DEBUG"] = os.environ.get("FLASK_DEBUG")
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY")
-socketio = SocketIO(app, cors_allowed_origins="*")
+socketio = SocketIO(app, cors_allowed_origins="*", async_mode="eventlet")
 translator = Translator()
 
 
