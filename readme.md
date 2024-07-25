@@ -19,24 +19,24 @@ This repository contains a multilingual chat application built using Flask and F
 ### Steps
 
 1. **Clone the repository**
-   git clone https://github.com/301202/PythonMultiTranslator.git
-   cd multilingual-chat-app
+   - git clone https://github.com/301202/PythonMultiTranslator.git
+   - cd multilingual-chat-app
 
 2. **Create a virtual environment and activate it**
-    python -m venv venv
-    source venv/bin/activate  or  venv/Scripts/activate
+    - python -m venv venv
+    - source venv/bin/activate  or  venv/Scripts/activate
 
 3. **Install the required packages** 
-    run pip install -r requirements.txt
+    - run pip install -r requirements.txt
 
 4. **Create a ".env" file in the root directory and add the following environment variables**
-    FLASK_DEBUG=True
-    SECRET_KEY=your_secret_key
-    PORT=5000
+    - FLASK_DEBUG=True
+    - SECRET_KEY=your_secret_key
+    - PORT=5000
 
 5. **Run your code and navigate to the ip address specified to view it**
-    python app.py
-    http://127.0.0.1:5000
+    - python app.py
+    - http://127.0.0.1:5000
 
 ## Usage
 
