@@ -2,61 +2,63 @@
 {% block content %}
 <div class="message-box">
     <h2>Chat Room: {{code}}</h2>
-    <button type="button" id="leave-btn" onclick="leaveRoom()" style="position: absolute; top: 10px; left: 10px;">
-        Leave Room
-    </button>
+    <button type="button" id="leave-btn" onclick="leaveRoom()">Leave Room</button>
     <div class="messages" id="messages"></div>
     <div class="inputs">
-        <input type="text" rows="3" placeholder="Message" name="message" id="message"/>
-        <button type="button" name="send" id="send-btn" onclick="sendMessage()">
-            Send
-        </button>
+        <input type="text" placeholder="Message" name="message" id="message" required>
+        <button type="button" name="send" id="send-btn" onclick="sendMessage()">Send</button>
     </div>
 </div>
 <script type="text/javascript">
     var socketio = io();
 
     const messages = document.getElementById("messages");
+    const username = "{{ session['name'] }}";
 
-    const createMessage = (name, msg) => {
+    const createMessage = (name, msg, isOwnMessage) => {
         const messageId = `message-${Date.now()}`;
+        const alignmentClass = isOwnMessage ? "text-right" : "text-left";
         const content = `
-        <div class="text" id="${messageId}">
-            <span>
-                <strong>${name}</strong>: ${msg}
-            </span>
-        </div>
-        `;
+        <div class="message ${alignmentClass}" id="${messageId}">
+            <div class="name">${name}</div>
+            <div class="text">${msg}</div>
+        </div>`;
         messages.innerHTML += content;
         document.getElementById(messageId).scrollIntoView();
     };
 
     socketio.on("message", (data) => {
-        createMessage(data.name, data.message);
+        createMessage(data.name, data.message, data.name === username);
     });
 
     const sendMessage = () => {
         const message = document.getElementById("message");
-        if(message.value == "") return;
+        if (message.value == "") return;
         socketio.emit("message", {data: message.value});
+        createMessage(username, message.value, true);
         message.value = "";
     };
 
     document.getElementById('message').addEventListener('keydown', function(event) {
         if (event.key === 'Enter') {
-            event.preventDefault(); // Prevent the default action if necessary
+            event.preventDefault();
             sendMessage();
         }
     });
 
     const leaveRoom = () => {
         socketio.emit("leave");
-        window.location.href = "/"; // Redirect to home or any other page after leaving the room
+        window.location.href = "/";
     };
+
+    socketio.on("disconnect", () => {
+        alert("Server has encountered an issue. Please leave the room.");
+        leaveRoom();
+    });
 </script>
 {% for msg in messages %}
 <script type="text/javascript">
-    createMessage("{{msg.name}}", "{{msg.message}}");
+    createMessage("{{ msg.name }}", "{{ msg.message }}");
 </script>
 {% endfor %}
 {% endblock %}

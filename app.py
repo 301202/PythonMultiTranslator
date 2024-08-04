@@ -141,7 +141,17 @@ def leave():
     
     print(f"{name} left the room {room}")
 
+def notify_server_error(room, message):
+    for member in rooms.get(room, {}).get("members", []):
+        user_language = member["language"]
+        translated_message = translator.translate(message, src='auto', dest=user_language).text
+        emit("server_error", {"message": translated_message}, room=member["sid"])
 
 if __name__ == "__main__":
-    port = int(os.environ.get('PORT', 5000))
-    socketio.run(app, host='0.0.0.0', port=port)
+    try:
+        port = int(os.environ.get('PORT', 5000))
+        socketio.run(app, host='0.0.0.0', port=port)
+    except Exception as e:
+        for room in rooms:
+            notify_server_error(room, "Server encountered an issue. Please leave the room.")
+        print("Server encountered an issue:", e)
