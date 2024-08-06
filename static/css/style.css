@@ -119,7 +119,7 @@ button:hover {
     padding: 10px;
     border-radius: 5px;
     word-wrap: break-word;
-    max-width: 100%;
+    max-width: 90%;
 }
 
 .muted {
