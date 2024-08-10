@@ -76,16 +76,24 @@ def handle_message(data):
     sender_name = session.get("name")
     original_message = data["data"]
 
+    content = {
+        "name": sender_name,
+        "message": original_message,
+        "user_id": session.get("user_id")
+    }
+    rooms[room]["messages"].append(content)
+
     for member in rooms[room]["members"]:
         user_language = member["language"]
         translated_message = translator.translate(original_message, src='auto', dest=user_language).text
 
-        content = {
+        translated_content = {
             "name": sender_name,
-            "message": translated_message
+            "message": translated_message,
+            "user_id": content["user_id"]
         }
 
-        emit("message", content, room=member["sid"])
+        emit("message", translated_content, room=member["sid"])
         print(f"Sent to {member['name']} ({user_language}): {translated_message}")
 
 @socketio.on("connect")
@@ -104,10 +112,14 @@ def connect(auth):
     join_room(room)
     rooms[room]["members"].append({"name": name, "language": language, "sid": sid, "user_id": user_id})
 
+    for message in rooms[room]["messages"]:
+        translated_message = translator.translate(message["message"], src='auto', dest=language).text
+        emit("message", {"name": message["name"], "message": translated_message, "user_id": message["user_id"]}, room=sid)
+
     for member in rooms[room]["members"]:
         user_language = member["language"]
         connect_message = translator.translate("has entered the room", src='auto', dest=user_language).text
-        emit("message", {"name": name, "message": connect_message}, room=member["sid"])
+        emit("message", {"name": name, "message": connect_message, "user_id": user_id}, room=member["sid"])
 
     print(f"{name} joined room {room} with language {language}")
 
@@ -128,7 +140,7 @@ def disconnect():
     for member in rooms.get(room, {}).get("members", []):
         user_language = member["language"]
         disconnect_message = translator.translate("has left the room", src='auto', dest=user_language).text
-        emit("message", {"name": name, "message": disconnect_message}, room=member["sid"])
+        emit("message", {"name": name, "message": disconnect_message, "user_id": user_id}, room=member["sid"])
 
     print(f"{name} left the room {room}")
 
@@ -149,7 +161,7 @@ def leave():
     for member in rooms.get(room, {}).get("members", []):
         user_language = member["language"]
         leave_message = translator.translate("has left the room", src='auto', dest=user_language).text
-        emit("message", {"name": name, "message": leave_message}, room=member["sid"])
+        emit("message", {"name": name, "message": leave_message, "user_id": user_id}, room=member["sid"])
 
     print(f"{name} left the room {room}")
 
