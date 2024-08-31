@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, session, redirect, url_for
+from flask import Flask, render_template, request, session, redirect, url_for, send_file
 from flask_socketio import join_room, leave_room, send, SocketIO, emit
 from dotenv import load_dotenv
 import os
@@ -6,6 +6,8 @@ import random
 from string import ascii_uppercase, digits
 from googletrans import Translator
 from flask_cors import CORS
+import PyPDF2
+from io import BytesIO
 
 load_dotenv()
 
@@ -142,26 +144,45 @@ def disconnect():
 
     print(f"{name} left the room {room}")
 
-@socketio.on("leave")
-def leave():
+@socketio.on('pdf_file')
+def handle_pdf_file(data):
     room = session.get("room")
-    name = session.get("name")
-    language = session.get("language")
-    user_id = session.get("user_id")
-    sid = request.sid
-    leave_room(room)
+    if room not in rooms:
+        return
 
-    if room in rooms:
-        rooms[room]["members"] = [member for member in rooms[room]["members"] if member["sid"] != sid]
-        if len(rooms[room]["members"]) <= 0:
-            del rooms[room]
+    file_content = data['content']
+    filename = data['filename']
 
+    # Convert PDF to TXT
+    pdf_file = BytesIO(file_content)
+    pdf_reader = PyPDF2.PdfReader(pdf_file)
+    text_content = ""
+
+    for page_num in range(len(pdf_reader.pages)):
+        page = pdf_reader.pages[page_num]
+        text_content += page.extract_text()
+
+    # Translate the TXT file content for each user
     for member in rooms.get(room, {}).get("members", []):
         user_language = member["language"]
-        leave_message = translator.translate("has left the room", src='auto', dest=user_language).text
-        emit("message", {"name": name, "message": leave_message}, room=member["sid"])
+        translated_text = translator.translate(text_content, src='auto', dest=user_language).text
+        translated_txt_file = BytesIO(translated_text.encode('utf-8'))
+        translated_txt_filename = f"{filename.replace('.pdf', f'_{user_language}.docx')}"
 
-    print(f"{name} left the room {room}")
+        # Save the translated TXT file
+        translated_txt_file_path = os.path.join('static', translated_txt_filename)
+        with open(translated_txt_file_path, 'wb') as f:
+            f.write(translated_txt_file.getvalue())
+
+        # Notify room with the translated TXT file URL
+        file_url = url_for('static', filename=translated_txt_filename)
+        content = {
+            "name": session.get("name"),
+            "file_url": file_url,
+            "filename": translated_txt_filename
+        }
+        emit("pdf_message", content, room=member["sid"])
+        print(f"Sent translated TXT file {translated_txt_filename} to {member['name']}")
 
 def notify_server_error(room, message):
     for member in rooms.get(room, {}).get("members", []):

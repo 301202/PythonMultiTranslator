@@ -80,6 +80,7 @@ button:hover {
     display: flex;
     gap: 10px;
     padding-top: 10px;
+    align-items: center; /* Align items vertically in the center */
 }
 
 .message {
@@ -122,13 +123,29 @@ button:hover {
     max-width: 90%;
 }
 
+/* New Styles for Attach Button */
+#attach-btn {
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    background-color: #007bff;
+    color: #fff;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    flex-shrink: 0; /* Prevent the button from shrinking */
+}
+
+#attach-btn:hover {
+    background-color: #0056b3;
+}
+
 .muted {
     font-size: 0.8em;
     color: #666;
 }
 
 #message {
-    flex: 1;
+    flex: 1; /* Allow the message input to take the remaining space */
     padding: 10px;
     border: 1px solid #ddd;
     border-radius: 5px;

@@ -1,10 +1,12 @@
 {% extends 'base.html' %}
 {% block content %}
 <div class="message-box">
-    <h2>Chat Room: {{code}}</h2>
+    <h2>Chat Room: {{ code }}</h2>
     <button type="button" id="leave-btn" onclick="leaveRoom()">Leave Room</button>
     <div class="messages" id="messages"></div>
     <div class="inputs">
+        <input type="file" id="file-input" accept=".pdf" style="display: none;">
+        <button type="button" id="attach-btn" onclick="document.getElementById('file-input').click()">Attach .pdf</button>
         <input type="text" placeholder="Message" name="message" id="message" required>
         <button type="button" name="send" id="send-btn" onclick="sendMessage()">Send</button>
     </div>
@@ -53,6 +55,30 @@
     socketio.on("disconnect", () => {
         alert("Server has encountered an issue. Please leave the room.");
         leaveRoom();
+    });
+
+    // Handle .pdf file input
+    document.getElementById('file-input').addEventListener('change', function() {
+        const file = this.files[0];
+        if (file && file.name.endsWith('.pdf')) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const arrayBuffer = e.target.result;
+                socketio.emit('pdf_file', { filename: file.name, content: arrayBuffer });
+            };
+            reader.readAsArrayBuffer(file);
+        } else {
+            alert("Please select a .pdf file");
+        }
+    });
+
+    // Handle incoming .txt messages
+    socketio.on('pdf_message', (data) => {
+        const link = document.createElement('a');
+        link.href = data.file_url;
+        link.textContent = `Download ${data.filename}`;
+        link.download = data.filename;
+        createMessage(data.name, link.outerHTML, data.name === username);
     });
 </script>
 {% for msg in messages %}
