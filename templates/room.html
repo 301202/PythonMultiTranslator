@@ -65,6 +65,8 @@
             reader.onload = function(e) {
                 const arrayBuffer = e.target.result;
                 socketio.emit('pdf_file', { filename: file.name, content: arrayBuffer });
+                // Reset the file input so the same file can be selected again
+                document.getElementById('file-input').value = '';
             };
             reader.readAsArrayBuffer(file);
         } else {
@@ -72,7 +74,7 @@
         }
     });
 
-    // Handle incoming .txt messages
+    // Handle incoming translated .txt messages
     socketio.on('pdf_message', (data) => {
         const link = document.createElement('a');
         link.href = data.file_url;
@@ -80,6 +82,7 @@
         link.download = data.filename;
         createMessage(data.name, link.outerHTML, data.name === username);
     });
+
 </script>
 {% for msg in messages %}
 <script type="text/javascript">
