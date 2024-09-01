@@ -167,7 +167,7 @@ def handle_pdf_file(data):
         user_language = member["language"]
         translated_text = translator.translate(text_content, src='auto', dest=user_language).text
         translated_txt_file = BytesIO(translated_text.encode('utf-8'))
-        translated_txt_filename = f"{filename.replace('.pdf', f'_{user_language}.docx')}"
+        translated_txt_filename = f"{filename.replace('.pdf', f'_{user_language}.txt')}"
 
         # Save the translated TXT file
         translated_txt_file_path = os.path.join('static', translated_txt_filename)
