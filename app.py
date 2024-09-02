@@ -18,7 +18,8 @@ app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY")
 socketio = SocketIO(app, cors_allowed_origins="*", async_mode="eventlet")
 translator = Translator()
 
-rooms = {}
+rooms = {} #Dictionary to store the list of rooms
+files = {} #Dictionary to store the list of files
 
 def generate_unique_code(length):
     while True:
@@ -135,7 +136,13 @@ def disconnect():
     if room in rooms:
         rooms[room]["members"] = [member for member in rooms[room]["members"] if member["sid"] != sid]
         if len(rooms[room]["members"]) <= 0:
-            del rooms[room]
+            # Delete files associated with the room
+            if room in files:
+                for file_path in files[room]:
+                    if os.path.exists(file_path):
+                        os.remove(file_path)
+                del files[room]  # Remove the room's file list from tracking
+            del rooms[room]  # Delete the room
 
     for member in rooms.get(room, {}).get("members", []):
         user_language = member["language"]
