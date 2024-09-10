@@ -8,6 +8,7 @@ from googletrans import Translator
 from flask_cors import CORS
 import PyPDF2
 from io import BytesIO
+import unicodedata
 
 load_dotenv()
 
@@ -151,6 +152,30 @@ def disconnect():
 
     print(f"{name} left the room {room}")
 
+import unicodedata
+
+def clean_text(text):
+    # Normalize the text to decompose special characters into simpler forms
+    text = unicodedata.normalize('NFKD', text)
+    
+    # Replace common bullet points and special characters
+    replacements = {
+        '•': '-',  # Bullet point replacement
+        '–': '-',  # En-dash replacement
+        '—': '-',  # Em-dash replacement
+        '�': '',   # Unknown character replacement
+        # Add more replacements as needed
+    }
+
+    # Perform replacements
+    for original, replacement in replacements.items():
+        text = text.replace(original, replacement)
+
+    # Strip excessive whitespace and normalize spaces
+    text = ' '.join(text.split())
+    
+    return text
+
 @socketio.on('pdf_file')
 def handle_pdf_file(data):
     room = session.get("room")
@@ -165,9 +190,18 @@ def handle_pdf_file(data):
     pdf_reader = PyPDF2.PdfReader(pdf_file)
     text_content = ""
 
+    # Extract and clean text from each page, ignoring images and handling special characters
     for page_num in range(len(pdf_reader.pages)):
         page = pdf_reader.pages[page_num]
-        text_content += page.extract_text()
+        if page is not None:
+            page_text = page.extract_text()
+            if page_text:
+                cleaned_text = clean_text(page_text)
+                text_content += cleaned_text + "\n\n"  # Add page breaks
+
+    if not text_content:
+        print(f"No text found in PDF: {filename}")
+        return  # Skip translation if no text was extracted
 
     # Translate the TXT file content for each user
     for member in rooms.get(room, {}).get("members", []):
@@ -190,6 +224,7 @@ def handle_pdf_file(data):
         }
         emit("pdf_message", content, room=member["sid"])
         print(f"Sent translated TXT file {translated_txt_filename} to {member['name']}")
+
 
 def notify_server_error(room, message):
     for member in rooms.get(room, {}).get("members", []):
