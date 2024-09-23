@@ -1,9 +1,13 @@
 {% extends 'base.html' %}
 {% block content %}
 <div class="message-box">
-    <h2>Chat Room: {{ code }}</h2>
+    <h3>Chat Room: {{ code }}</h3>
     <button type="button" id="leave-btn" onclick="leaveRoom()">Leave Room</button>
+    <div id="user-count" onclick="toggleUserList()">Users: <span id="active-users">0</span></div>
+    <div id="user-list" style="display: none;"></div>
+    
     <div class="messages" id="messages"></div>
+    
     <div class="inputs">
         <input type="file" id="file-input" accept=".pdf" style="display: none;">
         <button type="button" id="attach-btn" onclick="document.getElementById('file-input').click()">Attach .pdf</button>
@@ -11,12 +15,14 @@
         <button type="button" name="send" id="send-btn" onclick="sendMessage()">Send</button>
     </div>
 </div>
+
 <script type="text/javascript">
     var socketio = io();
 
     const messages = document.getElementById("messages");
     const username = "{{ session['name'] }}";
 
+    // Create message function
     const createMessage = (name, msg, isOwnMessage) => {
         const messageId = `message-${Date.now()}`;
         const alignmentClass = isOwnMessage ? "text-right" : "text-left";
@@ -29,10 +35,12 @@
         document.getElementById(messageId).scrollIntoView();
     };
 
+    // Handle incoming messages
     socketio.on("message", (data) => {
         createMessage(data.name, data.message, data.name === username);
     });
 
+    // Send message
     const sendMessage = () => {
         const message = document.getElementById("message");
         if (message.value == "") return;
@@ -47,9 +55,10 @@
         }
     });
 
+    // Leave room
     const leaveRoom = () => {
         socketio.emit("leave");
-        window.location.href = "/";
+        window.location.href = "/home";
     };
 
     socketio.on("disconnect", () => {
@@ -65,8 +74,7 @@
             reader.onload = function(e) {
                 const arrayBuffer = e.target.result;
                 socketio.emit('pdf_file', { filename: file.name, content: arrayBuffer });
-                // Reset the file input so the same file can be selected again
-                document.getElementById('file-input').value = '';
+                document.getElementById('file-input').value = ''; // Reset the file input
             };
             reader.readAsArrayBuffer(file);
         } else {
@@ -83,6 +91,28 @@
         createMessage(data.name, link.outerHTML, data.name === username);
     });
 
+    // Toggle user list
+    const activeUsersSpan = document.getElementById('active-users');
+    const userListDiv = document.getElementById('user-list');
+
+    const toggleUserList = () => {
+        userListDiv.style.display = userListDiv.style.display === "none" ? "block" : "none";
+    };
+
+    const updateUserList = (users) => {
+        activeUsersSpan.textContent = users.length; // Update user count
+        userListDiv.innerHTML = ''; // Clear current list
+
+        users.forEach(user => {
+            const userItem = document.createElement('div');
+            userItem.textContent = user.name;
+            userListDiv.appendChild(userItem);
+        });
+    };
+
+    socketio.on('update_users', (data) => {
+        updateUserList(data.users);
+    });
 </script>
 {% for msg in messages %}
 <script type="text/javascript">

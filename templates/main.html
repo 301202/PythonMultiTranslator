@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="welcome-container">
+        <div class="welcome-message" id="welcome-text">Welcome to LorTam</div>
+        <div class="language-text" id="language-text"></div>
+        <div class="enter-room">
+            <a href="/room">Enter a Chat Room</a>
+        </div>
+    </div>
+
+    <script>
+        const welcomeText = document.getElementById('welcome-text');
+        const languageText = document.getElementById('language-text');
+
+        const translations = [
+        { language: 'English', text: 'Welcome to LorTam'},
+        { language: 'Spanish', text: 'Bienvenido a LorTam' },
+        { language: 'French', text: 'Bienvenue à LorTam' },
+        { language: 'German', text: 'Willkommen bei LorTam' },
+        { language: 'Italian', text: 'Benvenuti a LorTam' },
+        { language: 'Japanese', text: 'ロルタムへようこそ' },
+        { language: 'Chinese', text: '欢迎来到 LorTam' },
+        { language: 'Russian', text: 'Добро пожаловать в LorTam' },
+        { language: 'Arabic', text: 'مرحبا بك في LorTam' },
+        { language: 'Hindi', text: 'LorTam में आपका स्वागत है' },
+        { language: 'Portuguese', text: 'Bem-vindo ao LorTam' },
+        { language: 'Korean', text: '로르탐에 오신 것을 환영합니다' },
+        { language: 'Turkish', text: 'LorTam\'a Hoşgeldiniz' },
+        { language: 'Swedish', text: 'Välkommen till LorTam' },
+        { language: 'Dutch', text: 'Welkom bij LorTam' },
+        { language: 'Greek', text: 'Καλώς ήρθατε στο LorTam' },
+        { language: 'Hebrew', text: 'ברוך הבא ל-LorTam' },
+        { language: 'Polish', text: 'Witamy w LorTam' },
+        { language: 'Danish', text: 'Velkommen til LorTam' },
+        { language: 'Finnish', text: 'Tervetuloa LorTamiin' },
+        { language: 'Norwegian', text: 'Velkommen til LorTam' },
+        { language: 'Czech', text: 'Vítejte v LorTam' },
+        { language: 'Hungarian', text: 'Üdvözöljük a LorTam-ban' },
+        { language: 'Thai', text: 'ยินดีต้อนรับสู่ LorTam' },
+        { language: 'Vietnamese', text: 'Chào mừng đến với LorTam' }
+    ];
+
+        let currentIndex = 0;
+
+        function changeLanguage() {
+            currentIndex = (currentIndex + 1) % translations.length;
+            const translation = translations[currentIndex];
+            welcomeText.textContent = translation.text;
+            languageText.textContent = `(${translation.language})`;
+        }
+
+        setInterval(changeLanguage, 1000);
+    </script>
+{% endblock %}

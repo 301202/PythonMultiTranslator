@@ -33,6 +33,11 @@ def generate_unique_id(length=8):
     return ''.join(random.choice(ascii_uppercase + digits) for _ in range(length))
 
 @app.route("/", methods=["POST", "GET"])
+def main():
+    return render_template("main.html")
+
+
+@app.route("/home", methods=["POST", "GET"])
 def home():
     session.clear()
     if request.method == "POST":
@@ -107,51 +112,58 @@ def connect(auth):
     sid = request.sid
     if not room or not name:
         return
+
     if room not in rooms:
-        leave_room(room)
-        return
+        rooms[room] = {"members": [], "messages": []}
 
     join_room(room)
+
+    # Add user to the room
     rooms[room]["members"].append({"name": name, "language": language, "sid": sid, "user_id": user_id})
 
+    # Notify all clients in the room about the new user list
+    emit("update_users", {"users": rooms[room]["members"]}, room=room)
+
+    # Send existing messages to the newly connected user
     for message in rooms[room]["messages"]:
         translated_message = translator.translate(message["message"], src='auto', dest=language).text
         emit("message", {"name": message["name"], "message": translated_message}, room=sid)
 
+    # Broadcast a message that the user has joined the room
     for member in rooms[room]["members"]:
         user_language = member["language"]
-        connect_message = translator.translate("has entered the room", src='auto', dest=user_language).text
+        connect_message = translator.translate(f"{name} has entered the room", src='auto', dest=user_language).text
         emit("message", {"name": name, "message": connect_message}, room=member["sid"])
 
-    print(f"{name} joined room {room} with language {language}")
 
 @socketio.on("disconnect")
 def disconnect():
     room = session.get("room")
     name = session.get("name")
-    language = session.get("language")
-    user_id = session.get("user_id")
     sid = request.sid
-    leave_room(room)
 
     if room in rooms:
+        # Remove the user from the room
         rooms[room]["members"] = [member for member in rooms[room]["members"] if member["sid"] != sid]
-        if len(rooms[room]["members"]) <= 0:
-            # Delete files associated with the room
+
+        # Check if the room is now empty
+        if len(rooms[room]["members"]) == 0:
+            # Clean up the files associated with this room
             if room in files:
                 for file_path in files[room]:
                     if os.path.exists(file_path):
                         os.remove(file_path)
-                del files[room]  # Remove the room's file list from tracking
-            del rooms[room]  # Delete the room
+                del files[room]
+            del rooms[room]
+        else:
+            # Update the remaining users with the new user list
+            emit("update_users", {"users": rooms[room]["members"]}, room=room)
 
-    for member in rooms.get(room, {}).get("members", []):
-        user_language = member["language"]
-        disconnect_message = translator.translate("has left the room", src='auto', dest=user_language).text
-        emit("message", {"name": name, "message": disconnect_message}, room=member["sid"])
-
-    print(f"{name} left the room {room}")
-
+            # Broadcast a message that the user has left the room
+            for member in rooms[room]["members"]:
+                user_language = member["language"]
+                disconnect_message = translator.translate(f"{name} has left the room", src='auto', dest=user_language).text
+                emit("message", {"name": name, "message": disconnect_message}, room=member["sid"])
 import unicodedata
 
 def clean_text(text):
@@ -235,7 +247,7 @@ def notify_server_error(room, message):
 if __name__ == "__main__":
     try:
         port = int(os.environ.get('PORT', 5000))
-        socketio.run(app, host='0.0.0.0', port=port)
+        socketio.run(app, host='127.0.0.1', port=port)
     except Exception as e:
         for room in rooms:
             notify_server_error(room, "Server encountered an issue. Please leave the room.")
