@@ -247,7 +247,7 @@ def notify_server_error(room, message):
 if __name__ == "__main__":
     try:
         port = int(os.environ.get('PORT', 5000))
-        socketio.run(app, host='127.0.0.1', port=port)
+        socketio.run(app, host='0.0.0.0', port=port)
     except Exception as e:
         for room in rooms:
             notify_server_error(room, "Server encountered an issue. Please leave the room.")
