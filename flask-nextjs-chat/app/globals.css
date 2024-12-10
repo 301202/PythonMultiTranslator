@@ -1,42 +1,256 @@
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* Base Styles */
+body {
+  font-family: 'Arial', sans-serif;
+  background-color: #f4f7f6;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* Headings */
+h2, h3 {
+  text-align: center;
+  margin: 0;
+  color: #333;
+}
+
+h2 {
+  font-size: 6em;
+}
+
+h3 {
+  font-size: 1.5em;
+}
+
+/* Form Styles */
+form, .buttons, .join, .languages {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+input[type="text"], select, button {
+  padding: 10px;
+  margin: 5px 0;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+button {
+  background-color: #28a745;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+button:hover {
+  background-color: #218838;
+}
+
+/* Chat Room Styles */
+.message-box {
+  border: 2px solid #ddd;
+  border-radius: 10px;
+  background-color: #fff;
+  display: flex;
+  flex-direction: column;
+  width: 90vw;
+  max-width: 800px;
+  height: 85vh;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+}
+
+.messages {
+  overflow-y: auto;
+  flex: 1;
+  padding: 10px;
+  border-bottom: 2px solid #ddd;
+}
+
+.inputs {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding-top: 10px;
+}
+
+.message {
+  margin-bottom: 10px;
+  padding: 10px;
+  border-radius: 5px;
+  max-width: 100%;
+  word-wrap: break-word;
+}
+
+.text-left, .text-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.text-left {
+  background-color: #e0e0e0;
+  margin-right: auto;
+}
+
+.text-right {
+  background-color: #d1e7dd;
+  margin-left: auto;
+}
+
+.name {
+  font-size: 0.9em;
+  font-weight: bold;
+  margin-bottom: 5px;
+  color: #333;
+}
+
+.text {
+  background-color: #f1f1f1;
+  padding: 10px;
+  border-radius: 5px;
+  max-width: 90%;
+}
+
+#message {
+  flex: 1;
+}
+
+/* Buttons */
+#attach-btn, #leave-btn, #user-count {
+  padding: 10px;
+  border: none;
+  border-radius: 5px;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+#attach-btn {
+  background-color: #007bff;
+}
+
+#attach-btn:hover {
+  background-color: #0056b3;
+}
+
+#leave-btn {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  background-color: #ff4c4c;
+}
+
+#leave-btn:hover {
+  background-color: #ff1a1a;
+}
+
+#user-count {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  background-color: #007bff;
+}
+
+/* User List */
+#user-list {
+  position: fixed;
+  top: 50px;
+  right: 10px;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  width: 200px;
+  max-height: 250px;
+  overflow-y: auto;
+  padding: 10px;
+  display: none;
+  z-index: 1000;
+}
+
+#user-list div {
+  padding: 5px;
+  border-bottom: 1px solid #eee;
+}
+
+#user-list div:last-child {
+  border-bottom: none;
+}
+
+#user-list div:hover {
+  background-color: #f0f0f0;
+}
+
+/* Welcome Page */
+.welcome-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  text-align: center;
+}
+
+.welcome-message {
+  font-size: 6em;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 20px;
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+.language-text {
+  font-size: 3em;
+  color: #555;
+  margin-bottom: 40px;
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+.enter-room a {
+  padding: 20px 40px;
+  background-color: #28a745;
+  color: white;
+  font-size: 2em;
+  text-decoration: none;
+  border-radius: 10px;
+  transition: background-color 0.3s ease;
+}
+
+.enter-room a:hover {
+  background-color: #218838;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+      opacity: 0;
+  }
+  to {
+      opacity: 1;
   }
 }
 
-html,
-body {
-  max-width: 100vw;
-  overflow-x: hidden;
-}
+/* Responsive Design */
+@media (max-width: 768px) {
+  .welcome-message {
+      font-size: 4em;
+  }
 
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
+  .language-text {
+      font-size: 2em;
+  }
 
-* {
-  box-sizing: border-box;
-  padding: 0;
-  margin: 0;
-}
-
-a {
-  color: inherit;
-  text-decoration: none;
-}
-
-@media (prefers-color-scheme: dark) {
-  html {
-    color-scheme: dark;
+  .enter-room a {
+      font-size: 1.5em;
+      padding: 15px 30px;
   }
 }
