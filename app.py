@@ -76,6 +76,10 @@ def room():
 
     return render_template("room.html", code=room, messages=rooms[room]["messages"])
 
+@app.route('/help')
+def help_page():
+    return render_template('help.html')
+
 @socketio.on("message")
 def handle_message(data):
     room = session.get("room")
@@ -247,7 +251,7 @@ def notify_server_error(room, message):
 if __name__ == "__main__":
     try:
         port = int(os.environ.get('PORT', 5000))
-        socketio.run(app, host='0.0.0.0', port=port)
+        socketio.run(app, host='0.0.0.0', port=5000)
     except Exception as e:
         for room in rooms:
             notify_server_error(room, "Server encountered an issue. Please leave the room.")
